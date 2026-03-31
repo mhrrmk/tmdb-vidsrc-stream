@@ -65,11 +65,11 @@ function rewriteUrls(html) {
 
 app.use(express.static(__dirname));
 
-app.get('/viewer', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'tmdb-viewer.html'));
 });
 
-app.get('/', async (req, res) => {
+app.get('/browse', async (req, res) => {
   try {
     const response = await axios.get(TMDB_HOST, {
       headers: {
