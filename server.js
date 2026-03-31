@@ -2,7 +2,8 @@ import express from 'express';
 import axios from 'axios';
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const TMDB_HOST = 'https://www.themoviedb.org';
 
 const overlayScript = `
@@ -50,10 +51,10 @@ window.addEventListener('load', function() {
 
 function rewriteUrls(html) {
   let result = html;
-  result = result.replace(/src="\//g, 'src="http://localhost:8080/');
-  result = result.replace(/href="\//g, 'href="http://localhost:8080/');
-  result = result.replace(/src='\//g, "src='http://localhost:8080/");
-  result = result.replace(/href='\//g, "href='http://localhost:8080/");
+  result = result.replace(/src="\//g, `src="${BASE_URL}/`);
+  result = result.replace(/href="\//g, `href="${BASE_URL}/`);
+  result = result.replace(/src='\//g, `src='${BASE_URL}/`);
+  result = result.replace(/href='\//g, `href='${BASE_URL}/`);
   return result;
 }
 
@@ -234,5 +235,5 @@ app.get('*', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log('TMDB Proxy Server running on http://localhost:' + PORT);
+  console.log(`TMDB Proxy Server running on port ${PORT}`);
 });
