@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>TMDB Viewer</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      #vidsrc-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background-color: #032541;
+        z-index: 999999999;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+      }
+      #vidsrc-link {
+        color: #00d4ff;
+        font-size: 14px;
+        text-decoration: none;
+      }
+      #tmdb-frame {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 60px);
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="vidsrc-overlay">
+      <a id="vidsrc-link" href="#" target="_blank"></a>
+    </div>
+    <iframe id="tmdb-frame" src="http://localhost:8080/"></iframe>
+
+    <script>
+      const link = document.getElementById("vidsrc-link");
+      const frame = document.getElementById("tmdb-frame");
+      const vidSrcBase = "https://vidsrcme.ru";
+      let lastSrc = "";
+
+      function updateOverlay(path) {
+        if (!path) return;
+
+        const movieMatch = path.match(/\/movie\/(\d+)/);
+        const tvMatch = path.match(
+          /\/tv\/(\d+)[^\/]*\/season\/(\d+)\/episode\/(\d+)/,
+        );
+
+        if (movieMatch) {
+          const tmdbId = movieMatch[1];
+          const vidSrcUrl = vidSrcBase + "/embed/movie?tmdb=" + tmdbId;
+          link.href = vidSrcUrl;
+          link.textContent = vidSrcUrl;
+        } else if (tvMatch) {
+          const tmdbId = tvMatch[1];
+          const season = tvMatch[2];
+          const episode = tvMatch[3];
+          const vidSrcUrl =
+            vidSrcBase +
+            "/embed/tv?tmdb=" +
+            tmdbId +
+            "&season=" +
+            season +
+            "&episode=" +
+            episode;
+          link.href = vidSrcUrl;
+          link.textContent = vidSrcUrl;
+        } else {
+          link.textContent = "";
+          link.href = "#";
+        }
+      }
+
+      window.addEventListener("message", function (event) {
+        if (event.data && event.data.type === "tmdb-url" && event.data.path) {
+          updateOverlay(event.data.path);
+        }
+      });
+
+      function checkSrc() {
+        const src = frame.src;
+        if (src !== lastSrc) {
+          lastSrc = src;
+          try {
+            const url = new URL(src);
+            updateOverlay(url.pathname + url.search);
+          } catch (e) {}
+        }
+      }
+
+      setInterval(checkSrc, 300);
+      frame.addEventListener("load", checkSrc);
+      setTimeout(checkSrc, 500);
+    </script>
+  </body>
+</html>
