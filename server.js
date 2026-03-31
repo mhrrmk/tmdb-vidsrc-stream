@@ -1,5 +1,10 @@
 import express from 'express';
 import axios from 'axios';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -57,6 +62,12 @@ function rewriteUrls(html) {
   result = result.replace(/href='\//g, `href='${BASE_URL}/`);
   return result;
 }
+
+app.use(express.static(__dirname));
+
+app.get('/viewer', (req, res) => {
+  res.sendFile(join(__dirname, 'tmdb-viewer.html'));
+});
 
 app.get('/', async (req, res) => {
   try {
